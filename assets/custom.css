@@ -1,0 +1,177 @@
+/* assets/custom.css */
+:root {
+    --primary-purple: #6A1B9A; /* A vibrant purple, adjust as needed */
+    --sidebar-bg: #4A0072; /* Darker purple for sidebar */
+    --sidebar-text-color: #FFFFFF;
+    --sidebar-hover-bg: #7B1FA2; /* Lighter purple for hover */
+    --sidebar-active-bg: #8E24AA; /* Even lighter for active/selected */
+    --content-bg: #F4F6F8; /* Very light grey for main content area */
+    --card-bg: #FFFFFF;
+    --text-color: #333;
+    --text-muted: #6c757d;
+    --border-color: #e0e0e0;
+}
+
+body, html {
+    height: 100%;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: var(--content-bg);
+    color: var(--text-color);
+}
+
+#app-container-wrapper {
+    display: flex;
+    flex-direction: column; /* For login page to take full height */
+    min-height: 100vh;
+}
+
+#app-container { /* For the dashboard layout with sidebar */
+    display: flex;
+    flex-grow: 1; /* Takes remaining height if #app-container-wrapper is column */
+}
+
+
+#sidebar-column {
+    background-color: var(--sidebar-bg);
+    color: var(--sidebar-text-color);
+    padding: 25px 15px; /* Increased padding */
+    width: 260px; /* Fixed width for sidebar */
+    min-width: 260px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    transition: width 0.3s ease; /* For potential future collapse */
+}
+
+.sidebar-header {
+    padding: 0 10px; /* Align with NavLink padding */
+    margin-bottom: 30px;
+}
+
+.sidebar-title {
+    font-size: 1.75rem; /* Larger title */
+    font-weight: 600; /* Bolder */
+    color: var(--sidebar-text-color);
+    text-align: left; /* Align to left */
+}
+
+#sidebar-nav .nav-link {
+    color: rgba(255, 255, 255, 0.8) !important;
+    padding: 12px 15px; /* Increased padding for navlinks */
+    margin-bottom: 8px; /* Spacing between links */
+    border-radius: 6px; /* Rounded corners for links */
+    display: flex;
+    align-items: center;
+    font-size: 0.95rem; /* Slightly larger font */
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+#sidebar-nav .nav-link .iconify {
+    margin-right: 12px; /* More space for icon */
+    font-size: 1.2em; /* Slightly larger icons */
+}
+
+#sidebar-nav .nav-link:hover,
+#sidebar-nav .nav-link.active { /* Style for active link (if implemented) */
+    background-color: var(--sidebar-hover-bg);
+    color: var(--sidebar-text-color) !important;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.sidebar-action-button { /* For New Request button */
+    background-color: var(--primary-purple) !important; /* Use a theme primary color */
+    border: none !important;
+    color: white !important;
+    width: 100%;
+    margin: 20px 0; /* Margin top and bottom */
+    padding: 10px 0 !important; /* Standard button padding */
+    font-weight: 500;
+    border-radius: 6px;
+}
+.sidebar-action-button:hover {
+    background-color: var(--sidebar-hover-bg) !important;
+}
+
+#sidebar-logout-button {
+    margin-top: auto; /* Pushes logout to the bottom */
+    background-color: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.5) !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+    font-weight: 500;
+    border-radius: 6px;
+    width: 100%;
+}
+#sidebar-logout-button:hover {
+    background-color: var(--sidebar-hover-bg) !important;
+    border-color: var(--sidebar-hover-bg) !important;
+    color: var(--sidebar-text-color) !important;
+}
+
+
+#page-content { /* The main content area to the right of the sidebar */
+    flex-grow: 1;
+    padding: 25px 30px; /* More padding */
+    overflow-y: auto;
+    background-color: var(--content-bg);
+}
+
+/* Card styling to match the modern feel */
+.card {
+    border: none; /* Remove default card border */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06); /* Softer, more diffuse shadow */
+    border-radius: 8px; /* Consistent rounded corners */
+    margin-bottom: 25px; /* Space below cards */
+}
+.card-header {
+    background-color: var(--card-bg) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    padding: 1rem 1.25rem; /* Standard padding */
+}
+.card-header h4 {
+    font-size: 1.1rem; /* Slightly smaller card titles */
+    font-weight: 600; /* Bolder */
+    color: var(--text-color);
+}
+.card-body {
+    padding: 1.25rem;
+}
+
+/* DataTable styling */
+.dash-table-container .dash-header {
+    background-color: #f8f9fa; /* A light grey for headers */
+    font-weight: 600; /* Bolder header text */
+    border-bottom: 2px solid var(--primary-purple); /* Accent border */
+}
+.dash-table-container .dash-cell {
+    padding: 0.75rem; /* More padding in cells */
+}
+
+/* Login Page Specific Styling */
+#login-container {
+    max-width: 450px;
+    margin: auto; /* Center the login card */
+    padding-top: 5vh; /* Some space from top */
+}
+
+#login-container .card-header h4 {
+    font-size: 1.5rem;
+    text-align: center;
+}
+
+/* Alert styling */
+.alert {
+    border-radius: 6px;
+}
+
+/* Modal Styling */
+.modal-header {
+    background-color: var(--primary-purple);
+    color: white;
+}
+.modal-header .btn-close { /* if Dash Bootstrap Components adds this class for close button */
+    filter: brightness(0) invert(1); /* Makes default close button white */
+}
+.modal-title {
+    font-weight: 500;
+}

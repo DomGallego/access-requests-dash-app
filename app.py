@@ -2,43 +2,32 @@
 import dash
 import dash_bootstrap_components as dbc
 from dash import html, dcc
-import layouts
-import callbacks # Import to register callbacks
+import logging
 
-# --- App Initialization ---
-app = dash.Dash(
-    __name__,
-    external_stylesheets=[dbc.themes.BOOTSTRAP],
-    suppress_callback_exceptions=True, # Needed because layout changes
-    title="Access Request System"
-)
-server = app.server # Expose server variable for deployment
+# Import from modules
+from modules.callbacks import register_callbacks
 
-# --- App Layout ---
+# --- Initialize Dash App ---
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.PULSE], suppress_callback_exceptions=True)
+app.title = "Internal DB Access System"
+
+# Configure logging
+log_format = '%(asctime)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s'
+logging.basicConfig(level=logging.INFO, format=log_format) # Basic config for root logger
+app.logger.setLevel(logging.INFO) # Set level for Dash app's logger
+
+# Main App Layout (Structure for URL routing and session management)
 app.layout = html.Div([
-    # Store for user session info (replace with proper session management in production)
-    dcc.Store(id='user-store', storage_type='session'), # 'session' persists across page reloads
-    dcc.Store(id='request-id-store', storage_type='memory'), # Temp store for modal
-
-    # Navbar (updated by callback)
-    html.Div(id='navbar-div', children=layouts.create_navbar(None)),
-
-    # Page content (updated by callback based on login)
-    html.Div(id='page-content', children=layouts.create_login_layout())
+    dcc.Store(id='session-store', storage_type='session'),
+    dcc.Store(id='refresh-trigger-store', data=0),
+    dcc.Location(id='url', refresh=False),
+    html.Div(id='app-container-wrapper') # Content will be rendered here by render_page_content callback
 ])
 
-# --- Register Callbacks ---
-# This function call finds and registers all functions decorated with @app.callback in callbacks.py
-callbacks.register_callbacks(app)
+# Register all callbacks
+register_callbacks(app)
 
-# --- Run the App ---
+# --- Main execution ---
 if __name__ == '__main__':
-    # Ensure DB utils can connect before starting
-    conn_test = db_utils.get_db_connection()
-    if conn_test:
-        print("Database connection successful.")
-        conn_test.close()
-        app.run_server(debug=True, port=8051) # Use a different port if 8050 is busy
-    else:
-        print("Database connection failed. Please check config.py and ensure PostgreSQL is running.")
-        print("Application will not start.")
+    app.logger.info("Starting Dash application...")
+    app.run(debug=True, port=8050)
