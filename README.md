@@ -89,7 +89,7 @@ The application will typically be available at `http://127.0.0.1:8050/` in your 
 
 ## Configuration
 
-*   **Database Connection:** Configure your PostgreSQL database connection details. This is likely managed in `modules/database.py` or a similar configuration section. Key details include:
+*   **Database Connection:** Configure your PostgreSQL database connection details. Key details include:
     *   `dbname`
     *   `user`
     *   `password`
