@@ -1,4 +1,3 @@
-# modules/layouts.py
 import dash_bootstrap_components as dbc
 from dash import html, dcc, dash_table
 from dash_iconify import DashIconify
@@ -44,7 +43,7 @@ login_layout = dbc.Container([
                         ]),
                         html.Li([
                             DashIconify(icon="carbon:report", className="me-2 text-primary"),
-                            html.Strong("Generate Reports:"), " Select a report type and download CSV files for auditing and overview."
+                            html.Strong("Generate Reports (Managers):"), " Managers can select a report type and download CSV files for auditing and overview." # Updated text
                         ]),
                          html.Li([
                             DashIconify(icon="carbon:logout", className="me-2 text-primary"),
@@ -155,10 +154,20 @@ def create_signup_layout(app, manager_email=None, manager_name=None):
 # --- Sidebar Layout ---
 def create_sidebar(app, session_data):
     user_first_name = session_data.get('first_name', 'User')
-    app.logger.info(f"Creating sidebar for {user_first_name}")
+    is_manager = session_data.get('is_manager', False) # Get manager status
+    app.logger.info(f"Creating sidebar for {user_first_name}. Is manager: {is_manager}")
 
-    # Sidebar links now point to /dashboard with a query parameter for the section
-    # The 'active' prop will be handled by a callback if needed, or rely on URL.
+    nav_items = [
+        dbc.NavLink([DashIconify(icon="carbon:table-of-contents", className="me-2"), "My Requests"], href="/dashboard?section=my-requests", id="navlink-my-requests", className="mb-1"),
+    ]
+
+    if is_manager:
+        nav_items.extend([
+            dbc.NavLink([DashIconify(icon="carbon:checkbox-checked", className="me-2"), "Approval Queue"], href="/dashboard?section=approvals", id="navlink-approvals", className="mb-1"),
+            dbc.NavLink([DashIconify(icon="carbon:report", className="me-2"), "Generate Reports"], href="/dashboard?section=reports", id="navlink-reports", className="mb-1"),
+            dbc.NavLink([DashIconify(icon="carbon:link", className="me-2"), "Invite Subordinate"], href="/dashboard?section=invite", id="navlink-invite", className="mb-1"),
+        ])
+
     return dbc.Col([
         html.Div([
             html.H2("Internal DB Access", className="sidebar-title"),
@@ -169,14 +178,7 @@ def create_sidebar(app, session_data):
                    id="open-new-request-modal-button-sidebar", color="light",
                    className="sidebar-action-button mb-4"),
         html.Hr(style={'borderColor': 'rgba(255,255,255,0.2)'}),
-        dbc.Nav([
-            dbc.NavLink([DashIconify(icon="carbon:table-of-contents", className="me-2"), "My Requests"], href="/dashboard?section=my-requests", id="navlink-my-requests", className="mb-1"),
-            dbc.NavLink([DashIconify(icon="carbon:checkbox-checked", className="me-2"), "Approval Queue"], href="/dashboard?section=approvals", id="navlink-approvals", className="mb-1", style={'display': 'block' if session_data.get('is_manager') else 'none'}),
-            dbc.NavLink([DashIconify(icon="carbon:report", className="me-2"), "Generate Reports"], href="/dashboard?section=reports", id="navlink-reports", className="mb-1"),
-            html.Div([
-                 dbc.NavLink([DashIconify(icon="carbon:link", className="me-2"), "Invite Subordinate"], href="/dashboard?section=invite", id="navlink-invite", className="mb-1"),
-            ], style={'display': 'block' if session_data.get('is_manager') else 'none'}),
-        ], vertical=True, pills=False, id="sidebar-nav"),
+        dbc.Nav(nav_items, vertical=True, pills=False, id="sidebar-nav"), # Use the constructed nav_items
 
         dbc.Button([DashIconify(icon="carbon:logout", className="me-2"), "Logout"],
                    id="sidebar-logout-button", color="secondary", outline=True, className="mt-auto")
@@ -228,7 +230,7 @@ def create_main_content_area(app, session_data, section=None):
             ),
             html.Div(id='my-request-action-panel', className="mt-3 p-3 border rounded", style={'display': 'none'})
         ])
-    ], id="my-requests-section-card") # Ensure card itself has an ID if you want to scroll to the card
+    ], id="my-requests-section-card")
 
     approval_section_ui = dbc.Card([
         dbc.CardHeader(html.H4("Requests Requiring My Action / History", className="mb-0"), id="approvals-header"),
@@ -251,23 +253,7 @@ def create_main_content_area(app, session_data, section=None):
         ])
     ], id="approval-section-card", style={'display': 'block' if is_manager else 'none'})
 
-    reports_section_ui = dbc.Card([
-        dbc.CardHeader(html.H4("Generate Reports", className="mb-0"), id="reports-header"),
-        dbc.CardBody([
-            dbc.Row([
-                dbc.Col(dcc.Dropdown(id='report-type-dropdown',
-                    options=[ {'label': 'Access Request Audit Log', 'value': 'audit_log'},
-                              {'label': 'User Access Permissions Report', 'value': 'user_permissions'},
-                              {'label': 'Pending Access Requests Report', 'value': 'pending_requests'}, ],
-                    placeholder="Select a report type...", className="mb-2"
-                ), md=7),
-                dbc.Col(dbc.Button([DashIconify(icon="carbon:download", className="me-2"),"Download Report (CSV)"], id="download-report-button", color="info", className="w-100"), md=5),
-            ], className="mb-3 align-items-center"),
-            dcc.Download(id="download-csv"),
-            html.Div(id="report-generation-feedback", className="mt-2")
-        ])
-    ], id="reports-section-card")
-
+    # reports_section_ui is now built conditionally inside the content_to_display list
     invite_section_ui = dbc.Card([
         dbc.CardHeader(html.H4("Invite Subordinate", className="mb-0"), id="invite-header"),
         dbc.CardBody([
@@ -283,19 +269,31 @@ def create_main_content_area(app, session_data, section=None):
     ], id="invite-section-card", style={'display': 'block' if is_manager else 'none'})
 
 
-    # **This is the crucial change:** Always construct the full list of components
-    # that should be visible based on the user's role.
-    content_to_display = [my_requests_section_ui]
+    content_to_display = [my_requests_section_ui] # My Requests is always visible
     if is_manager:
         content_to_display.append(approval_section_ui)
-    content_to_display.append(reports_section_ui)
-    if is_manager:
+        # Only add Reports section if the user is a manager
+        reports_section_ui = dbc.Card([
+            dbc.CardHeader(html.H4("Generate Reports", className="mb-0"), id="reports-header"),
+            dbc.CardBody([
+                dbc.Row([
+                    dbc.Col(dcc.Dropdown(id='report-type-dropdown',
+                        options=[ {'label': 'Access Request Audit Log', 'value': 'audit_log'},
+                                  {'label': 'User Access Permissions Report', 'value': 'user_permissions'},
+                                  {'label': 'Pending Access Requests Report', 'value': 'pending_requests'}, ],
+                        placeholder="Select a report type...", className="mb-2"
+                    ), md=7),
+                    dbc.Col(dbc.Button([DashIconify(icon="carbon:download", className="me-2"),"Download Report (CSV)"], id="download-report-button", color="info", className="w-100"), md=5),
+                ], className="mb-3 align-items-center"),
+                dcc.Download(id="download-csv"),
+                html.Div(id="report-generation-feedback", className="mt-2")
+            ])
+        ], id="reports-section-card")
+        content_to_display.append(reports_section_ui)
         content_to_display.append(invite_section_ui)
 
 
     return dbc.Col([
-        # This store can be used by a clientside callback to scroll to the relevant section
-        # if the `section` query parameter is present.
         dcc.Store(id='dashboard-active-section-store', data=section),
         dcc.Interval(id='dashboard-load-trigger', interval=100, n_intervals=0, max_intervals=1),
         dcc.Store(id='selected-request-id-store'),
